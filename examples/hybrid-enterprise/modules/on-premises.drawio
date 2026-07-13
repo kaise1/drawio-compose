@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile compressed="false"><diagram id="on-premises" name="On-Premises Data Center"><mxGraphModel adaptiveColors="auto"><root>
+  <mxCell id="0"/>
+  <mxCell id="1" parent="0"/>
+  <mxCell id="users" value="Enterprise Users" style="shape=actor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1"><mxGeometry x="20" y="110" width="70" height="90" as="geometry"/></mxCell>
+  <mxCell id="edge-firewall" value="Edge Firewall" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="130" y="120" width="120" height="60" as="geometry"/></mxCell>
+  <mxCell id="load-balancer" value="Load Balancer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="290" y="120" width="120" height="60" as="geometry"/></mxCell>
+  <mxCell id="application-cluster" value="Application Cluster" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="460" y="50" width="140" height="60" as="geometry"/></mxCell>
+  <mxCell id="identity-service" value="Identity Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="460" y="150" width="140" height="60" as="geometry"/></mxCell>
+  <mxCell id="database" value="Enterprise Database" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="290" y="250" width="120" height="80" as="geometry"/></mxCell>
+  <mxCell id="monitoring-agent" value="Monitoring Agent" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1"><mxGeometry x="460" y="260" width="140" height="60" as="geometry"/></mxCell>
+  <object id="private-endpoint" label="Private Endpoint" composeKey="private-endpoint" composeExport="1"><mxCell style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="650" y="120" width="130" height="60" as="geometry"/></mxCell></object>
+  <mxCell id="e1" edge="1" parent="1" source="users" target="edge-firewall" style="edgeStyle=orthogonalEdgeStyle;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="e2" edge="1" parent="1" source="edge-firewall" target="load-balancer" style="edgeStyle=orthogonalEdgeStyle;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="e3" edge="1" parent="1" source="load-balancer" target="application-cluster" style="edgeStyle=orthogonalEdgeStyle;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="e4" edge="1" parent="1" source="load-balancer" target="identity-service" style="edgeStyle=orthogonalEdgeStyle;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="e5" edge="1" parent="1" source="application-cluster" target="database" style="edgeStyle=orthogonalEdgeStyle;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="e6" edge="1" parent="1" source="application-cluster" target="monitoring-agent" style="edgeStyle=orthogonalEdgeStyle;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="e7" edge="1" parent="1" source="application-cluster" target="private-endpoint" style="edgeStyle=orthogonalEdgeStyle;html=1;"><mxGeometry relative="1" as="geometry"/></mxCell>
+</root></mxGraphModel></diagram></mxfile>

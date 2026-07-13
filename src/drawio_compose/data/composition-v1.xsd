@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="unqualified">
+  <xs:simpleType name="composeId">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-z][a-z0-9-]*"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="endpoint">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-z][a-z0-9-]*\.[a-z][a-z0-9-]*"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:element name="composition">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="modules">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="module" minOccurs="1" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="id" type="composeId" use="required"/>
+                  <xs:attribute name="src" type="xs:string" use="required"/>
+                  <xs:attribute name="label" type="xs:string"/>
+                  <xs:attribute name="row" type="xs:nonNegativeInteger" use="required"/>
+                  <xs:attribute name="column" type="xs:nonNegativeInteger" use="required"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="connections" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="connect" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="id" type="composeId" use="required"/>
+                  <xs:attribute name="from" type="endpoint" use="required"/>
+                  <xs:attribute name="to" type="endpoint" use="required"/>
+                  <xs:attribute name="label" type="xs:string"/>
+                  <xs:attribute name="style" type="xs:string"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="version" use="required" fixed="1"/>
+      <xs:attribute name="id" type="composeId" use="required"/>
+      <xs:attribute name="pageName" type="xs:string"/>
+      <xs:attribute name="columnGap" type="xs:nonNegativeInteger" default="80"/>
+      <xs:attribute name="rowGap" type="xs:nonNegativeInteger" default="80"/>
+      <xs:attribute name="padding" type="xs:nonNegativeInteger" default="30"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

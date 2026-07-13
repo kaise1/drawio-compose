@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<composition version="1" id="hybrid-enterprise" pageName="Hybrid Enterprise Architecture" columnGap="90" rowGap="90" padding="30">
+  <modules>
+    <module id="on-premises" src="modules/on-premises.drawio" label="On-Premises Data Center" row="0" column="0"/>
+    <module id="connectivity" src="modules/connectivity.drawio" label="Hybrid Connectivity" row="0" column="1"/>
+    <module id="aws-network" src="modules/aws-network.drawio" label="AWS Network Foundation" row="0" column="2"/>
+    <module id="aws-application" src="modules/aws-application.drawio" label="AWS Application Platform" row="1" column="2"/>
+    <module id="operations" src="modules/operations.drawio" label="Operations and Monitoring" row="1" column="1"/>
+  </modules>
+  <connections>
+    <connect id="onprem-to-direct-connect" from="on-premises.private-endpoint" to="connectivity.direct-connect" label="Private circuit"/>
+    <connect id="connectivity-to-network" from="connectivity.transit-gateway" to="aws-network.transit-attachment" label="Transit attachment"/>
+    <connect id="network-to-application" from="aws-network.application-vpc" to="aws-application.ingress" label="Private routing"/>
+    <connect id="application-events-to-operations" from="aws-application.event-out" to="operations.event-ingest" label="Operational events" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#9673a6;"/>
+    <connect id="eventbridge-to-event-ingest" from="aws-application.eventbridge" to="operations.event-ingest" label="EventBridge events" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;strokeColor=#9673a6;"/>
+  </connections>
+</composition>

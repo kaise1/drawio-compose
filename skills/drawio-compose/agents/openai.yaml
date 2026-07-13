@@ -1,0 +1,4 @@
+interface:
+  display_name: "drawio-compose"
+  short_description: "Compose modular draw.io architecture diagrams"
+  default_prompt: "Use $drawio-compose to build or incrementally edit a modular draw.io architecture."
