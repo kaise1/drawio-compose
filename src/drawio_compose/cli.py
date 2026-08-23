@@ -9,6 +9,7 @@ from . import __version__
 from .composer import build_composition, load_modules, symbols_document
 from .errors import DrawioComposeError
 from .manifest import parse_composition
+from .models import CompositionSpec
 from .render import render_diagram
 from .shapes import search_shapes
 from .xmlio import atomic_write, canonical_xml_bytes, load_graph_model, make_uncompressed_mxfile
@@ -17,6 +18,22 @@ from .xmlio import atomic_write, canonical_xml_bytes, load_graph_model, make_unc
 def _emit_warnings(warnings: list[str] | tuple[str, ...]) -> None:
     for warning in warnings:
         print(f"warning: {warning}", file=sys.stderr)
+
+
+def _generated_output_path(
+    output: str | Path,
+    composition: CompositionSpec,
+    artifact: str,
+) -> Path:
+    resolved = Path(output).resolve()
+    sources = {composition.path: "composition manifest"}
+    sources.update({module.src: f"module {module.id}" for module in composition.modules})
+    source_kind = sources.get(resolved)
+    if source_kind is not None:
+        raise DrawioComposeError(
+            f"refusing to overwrite {source_kind} with {artifact} output: {resolved}"
+        )
+    return resolved
 
 
 def _command_validate(args: argparse.Namespace) -> None:
@@ -28,8 +45,8 @@ def _command_validate(args: argparse.Namespace) -> None:
 
 def _command_build(args: argparse.Namespace) -> None:
     composition = parse_composition(args.composition)
+    output = _generated_output_path(args.output, composition, "build")
     result = build_composition(composition)
-    output = Path(args.output)
     atomic_write(output, result.xml)
     _emit_warnings(result.warnings)
     print(output.resolve())
@@ -37,8 +54,8 @@ def _command_build(args: argparse.Namespace) -> None:
 
 def _command_symbols(args: argparse.Namespace) -> None:
     composition = parse_composition(args.composition)
+    output = _generated_output_path(args.output, composition, "symbols")
     modules = load_modules(composition)
-    output = Path(args.output)
     atomic_write(output, symbols_document(composition, modules))
     _emit_warnings([warning for module in modules.values() for warning in module.warnings])
     print(output.resolve())

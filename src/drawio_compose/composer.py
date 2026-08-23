@@ -8,7 +8,7 @@ from lxml import etree
 
 from .models import CompositionSpec, ModuleDocument
 from .validation import validate_connection_endpoints, validate_final_document, validate_module
-from .xmlio import canonical_xml_bytes
+from .xmlio import canonical_xml_bytes, edge_absolute_points
 
 
 DEFAULT_EDGE_STYLE = "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;"
@@ -100,6 +100,14 @@ def _copy_module_elements(
             if geometry is not None:
                 geometry.set("x", _fmt(float(geometry.get("x", "0")) + shift_x))
                 geometry.set("y", _fmt(float(geometry.get("y", "0")) + shift_y))
+        elif cell is not None and cell.get("parent") == "1" and cell.get("edge") == "1":
+            geometry = cell.find("mxGeometry")
+            if geometry is not None:
+                for point in edge_absolute_points(geometry):
+                    for attribute, shift in (("x", shift_x), ("y", shift_y)):
+                        value = point.get(attribute)
+                        if value is not None:
+                            point.set(attribute, _fmt(float(value) + shift))
 
         for descendant in element.iter():
             identifier = descendant.get("id")

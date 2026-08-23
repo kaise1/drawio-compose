@@ -9,7 +9,7 @@ from lxml import etree
 from .errors import DrawioComposeError, ValidationError
 from .models import Bounds, CompositionSpec, ModuleDocument, ModuleSpec
 from .resources import MXFILE_XSD
-from .xmlio import load_graph_model
+from .xmlio import edge_absolute_points, load_graph_model
 
 
 ID_PATTERN = r"^[a-z][a-z0-9-]*$"
@@ -90,7 +90,8 @@ def validate_module(spec: ModuleSpec) -> ModuleDocument:
         errors.append(f"{spec.src}: default layer id=1 parent=0 is missing")
 
     exports: dict[str, str] = {}
-    top_level_bounds: list[tuple[float, float, float, float]] = []
+    top_level_vertex_bounds: list[tuple[float, float, float, float]] = []
+    top_level_edge_bounds: list[tuple[float, float, float, float]] = []
     for entry in entries:
         cell = entry.cell
         if entry.id in {"0", "1"}:
@@ -121,7 +122,7 @@ def validate_module(spec: ModuleSpec) -> ModuleDocument:
             if width <= 0 or height <= 0:
                 errors.append(f"{spec.src}: cell {entry.id} width and height must be positive")
             if parent == "1":
-                top_level_bounds.append((x, y, x + width, y + height))
+                top_level_vertex_bounds.append((x, y, x + width, y + height))
         if is_edge:
             source = cell.get("source")
             target = cell.get("target")
@@ -131,6 +132,12 @@ def validate_module(spec: ModuleSpec) -> ModuleDocument:
                 errors.append(f"{spec.src}: edge {entry.id} has missing or invalid target")
             if geometry.get("relative") != "1":
                 errors.append(f"{spec.src}: edge {entry.id} geometry must have relative=1")
+            if parent == "1":
+                for index, point in enumerate(edge_absolute_points(geometry), start=1):
+                    point_id = f"{entry.id} point {index}"
+                    x = _number(point.get("x"), "x", point_id, errors)
+                    y = _number(point.get("y"), "y", point_id, errors)
+                    top_level_edge_bounds.append((x, y, x, y))
 
         if entry.element.tag in {"object", "UserObject"} and entry.element.get("composeExport") == "1":
             key = entry.element.get("composeKey") or ""
@@ -143,10 +150,11 @@ def validate_module(spec: ModuleSpec) -> ModuleDocument:
             else:
                 exports[key] = entry.id
 
-    if not top_level_bounds:
+    if not top_level_vertex_bounds:
         errors.append(f"{spec.src}: module has no top-level vertices")
         bounds = Bounds(0, 0, 0, 0)
     else:
+        top_level_bounds = top_level_vertex_bounds + top_level_edge_bounds
         bounds = Bounds(
             min(item[0] for item in top_level_bounds),
             min(item[1] for item in top_level_bounds),

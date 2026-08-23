@@ -14,13 +14,35 @@ This repository is a public v0.1 alpha. The format and commands may change befor
 - `lxml` 5.2 or newer
 - draw.io Desktop only when using `render`
 
-## Install for development
+## Install the CLI and skill
+
+The Agent Skill delegates XML mechanics to the Python CLI, so both pieces are required.
+
+### Use in this repository
 
 ```bash
 python -m venv .venv
 .venv/Scripts/pip install -e .       # Windows
 # .venv/bin/pip install -e .         # macOS/Linux
+drawio-compose --version
 ```
+
+Launch Codex from this repository after installing the CLI. Codex discovers the checked-in skill at `.agents/skills/drawio-compose` automatically.
+
+### Use in another repository
+
+Install the CLI from GitHub:
+
+```bash
+python -m pip install "git+https://github.com/kaise1/drawio-compose.git"
+drawio-compose --version
+```
+
+Then ask Codex to install the skill from `https://github.com/kaise1/drawio-compose/tree/main/.agents/skills/drawio-compose` with `$skill-installer`. For a manual repository-scoped installation, copy or symlink that directory to `$REPO_ROOT/.agents/skills/drawio-compose`. User-wide skills belong under `$HOME/.agents/skills`.
+
+See OpenAI's [Build skills documentation](https://learn.chatgpt.com/docs/build-skills) for current discovery and installation locations.
+
+The skill checks the CLI before touching composition sources. It may use `python -m drawio_compose` when the console entry point is not on `PATH`, but it will not install the package without user approval.
 
 ## Quick start
 
@@ -69,6 +91,8 @@ Each module is a normal one-page `.drawio` file. External connections use stable
 ```
 
 The composition references `module-id.compose-key`, never a generated global cell ID. See [the format specification](docs/FORMAT.md).
+
+The CLI refuses to write `build` or `symbols` output over the composition manifest or any referenced module.
 
 ## Commands
 

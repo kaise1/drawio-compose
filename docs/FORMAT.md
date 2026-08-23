@@ -54,11 +54,12 @@ Compressed modules can be read and validated, but should be converted with `draw
 The assembler:
 
 1. Validates the composition and every module.
-2. Computes each module's local bounding box.
+2. Computes each module's local bounding box, including top-level edge waypoints.
 3. Creates a titled draw.io container for each fixed grid slot.
-4. Prefixes local IDs and rewrites `parent`, `source`, and `target` references.
+4. Prefixes local IDs, rewrites `parent`, `source`, and `target` references, and translates top-level edge waypoints into the module container coordinate system.
 5. Generates cross-module edges only between exported nodes.
 6. Validates the final document with the official mxfile XSD and semantic reference checks.
 7. Writes uncompressed canonical XML without timestamps or XML comments.
 
 The combined `.drawio` is generated output. Changes made directly to it are not synchronized back to module sources.
+The CLI refuses to write `build` or `symbols` output over this manifest or any referenced module.

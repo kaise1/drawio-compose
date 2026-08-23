@@ -13,6 +13,19 @@ from lxml import etree
 from .errors import DrawioComposeError, ValidationError
 
 
+def edge_absolute_points(geometry: etree._Element) -> list[etree._Element]:
+    """Return edge points expressed in the edge parent's coordinate system."""
+    points: list[etree._Element] = []
+    for point in geometry.iter("mxPoint"):
+        role = point.get("as")
+        parent = point.getparent()
+        if role in {"sourcePoint", "targetPoint"} or (
+            parent is not None and parent.tag == "Array" and parent.get("as") == "points"
+        ):
+            points.append(point)
+    return points
+
+
 def _parser() -> etree.XMLParser:
     return etree.XMLParser(
         remove_blank_text=True,

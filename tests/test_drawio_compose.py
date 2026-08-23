@@ -194,6 +194,85 @@ class DrawioComposeTests(unittest.TestCase):
             self.assertEqual(exit_code, 2)
             self.assertEqual(output.read_bytes(), b"preserve-me")
 
+    def test_generated_outputs_cannot_overwrite_composition_sources(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            module = root / "module.drawio"
+            module.write_text(module_xml(vertex("api", exported="api")), encoding="utf-8")
+            manifest = root / "architecture.compose.xml"
+            manifest.write_text(
+                '<composition version="1" id="architecture"><modules>'
+                '<module id="module" src="module.drawio" row="0" column="0"/>'
+                "</modules></composition>",
+                encoding="utf-8",
+            )
+            manifest_before = manifest.read_bytes()
+            module_before = module.read_bytes()
+
+            with contextlib.redirect_stderr(io.StringIO()) as stderr:
+                build_exit = cli_main(["build", str(manifest), "-o", str(manifest)])
+            self.assertEqual(build_exit, 2)
+            self.assertIn("refusing to overwrite composition manifest", stderr.getvalue())
+            self.assertEqual(manifest.read_bytes(), manifest_before)
+
+            with contextlib.redirect_stderr(io.StringIO()) as stderr:
+                symbols_exit = cli_main(["symbols", str(manifest), "-o", str(module)])
+            self.assertEqual(symbols_exit, 2)
+            self.assertIn("refusing to overwrite module module", stderr.getvalue())
+            self.assertEqual(module.read_bytes(), module_before)
+
+    def test_top_level_edge_points_are_shifted_and_included_in_bounds(self) -> None:
+        first = (
+            '<mxCell id="first" value="First" vertex="1" parent="1">'
+            '<mxGeometry x="100" y="200" width="100" height="60" as="geometry"/>'
+            "</mxCell>"
+        )
+        second = (
+            '<mxCell id="second" value="Second" vertex="1" parent="1">'
+            '<mxGeometry x="300" y="200" width="100" height="60" as="geometry"/>'
+            "</mxCell>"
+        )
+        edge = (
+            '<mxCell id="edge" edge="1" parent="1" source="first" target="second">'
+            '<mxGeometry relative="1" as="geometry">'
+            '<mxPoint x="100" y="230" as="sourcePoint"/>'
+            '<mxPoint x="400" y="230" as="targetPoint"/>'
+            '<Array as="points"><mxPoint x="250" y="150"/></Array>'
+            '<mxPoint x="5" y="10" as="offset"/>'
+            "</mxGeometry></mxCell>"
+        )
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "module.drawio").write_text(
+                module_xml(first + second + edge), encoding="utf-8"
+            )
+            manifest = root / "architecture.compose.xml"
+            manifest.write_text(
+                '<composition version="1" id="architecture"><modules>'
+                '<module id="module" src="module.drawio" row="0" column="0"/>'
+                "</modules></composition>",
+                encoding="utf-8",
+            )
+
+            result = build_composition(parse_composition(manifest))
+            document = etree.fromstring(result.xml)
+            container = document.xpath('//mxCell[@id="module__module"]/mxGeometry')[0]
+            self.assertEqual(container.get("width"), "360")
+            self.assertEqual(container.get("height"), "200")
+
+            first_geometry = document.xpath('//mxCell[@id="m_module__first"]/mxGeometry')[0]
+            self.assertEqual((first_geometry.get("x"), first_geometry.get("y")), ("30", "110"))
+
+            edge_geometry = document.xpath('//mxCell[@id="m_module__edge"]/mxGeometry')[0]
+            source_point = edge_geometry.xpath('./mxPoint[@as="sourcePoint"]')[0]
+            target_point = edge_geometry.xpath('./mxPoint[@as="targetPoint"]')[0]
+            waypoint = edge_geometry.xpath('./Array[@as="points"]/mxPoint')[0]
+            offset = edge_geometry.xpath('./mxPoint[@as="offset"]')[0]
+            self.assertEqual((source_point.get("x"), source_point.get("y")), ("30", "140"))
+            self.assertEqual((target_point.get("x"), target_point.get("y")), ("330", "140"))
+            self.assertEqual((waypoint.get("x"), waypoint.get("y")), ("180", "60"))
+            self.assertEqual((offset.get("x"), offset.get("y")), ("5", "10"))
+
     def test_nested_group_references_are_prefixed(self) -> None:
         group = (
             '<mxCell id="group" style="group;" vertex="1" parent="1">'
